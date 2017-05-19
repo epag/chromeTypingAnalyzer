@@ -189,12 +189,5 @@ trie.add('appled', [1.02,2.11,3.00,4.44,5.91,6.04], [13.11,2,4,7,4,1]);
 trie.add('ape', [3.01,2,1],[1,2,3]);
 trie.add('aps', [3.01,2,1],[1,2,6]);
 trie.remove('aps');
-trie.print(); // => | o t f | n w i | e o f | t | h y
-trie.printByLevel(); // => o t f \n n w i \n e o f \n t \n h y
-console.log('words are: one, two, fifth, fifty:', trie.getWords()); // => [ 'one', 'two', 'fifth', 'fifty' ]
-console.log('trie count words is 4:', trie.countWords()); // => 4
-console.log('trie contains apps is true:', trie.contains('apps')); // => true
-console.log('trie contains on is false:', trie.contains('on')); // => false
-console.log('trie count words is 3:', trie.countWords()); // => 3
-console.log('words are two, fifth, fifty:', trie.getWords()); // => [ 'two', 'fifth', 'fifty' ]function Node(data) 
-
+trie.print();
+trie.printByLevel(); 
