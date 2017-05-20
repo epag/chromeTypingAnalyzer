@@ -7,13 +7,13 @@ Type here:<br>
 <br> 
 
 
-			<div id="output"> </div>
-			<button type="button" onclick"getInput();">Start</button>
-			<button type="button">End</button>
+<div id="output"> </div>
+<button type="button" onclick"getInput();">Start</button>
+<button type="button">End</button>
 
 <script type="text/javascript">
 var output = document.getElementById('output'),
-pressed = {};
+    pressed = {};
 
 window.onkeydown = function(e) {
 	if ( pressed[e.which] ) return;
@@ -29,11 +29,11 @@ window.onkeyup = function(e) {
 	times = JSON.parse(localStorage.getItem('time'));
 	var charCode = e.keyCode || e.which;
 	var charStr = String.fromCharCode(charCode);
-	
+	var start = pressed[e.which];	
 
-	times.push({charStr, duration});
+	times.push({charStr, duration, start});
 	localStorage.setItem('time', JSON.stringify(times));
-	output.innerHTML +='<p>Key ' + charStr  + ' was pressed for ' + duration + ' seconds</p>';
+	output.innerHTML +='<p>Key ' + charStr  + ' was pressed for ' + duration + ' seconds at time ' + start  + '</p>';
 	pressed[e.which] = 0;
 	console.log(times[0]);
 };
@@ -49,10 +49,10 @@ document.onkeypress = function(e) {
 	var charStr = String.fromCharCode(charCode);
 	console.log(charStr);
 	var res = prep.concat(charStr).replace(/"([^"]+(?="))"/g, '$1');
-	var res2 = res.replace(/\\/g,"");
-	console.log(res2);
-	localStorage.setItem('holder', JSON.stringify(res));
-	};
+			var res2 = res.replace(/\\/g,"");
+			console.log(res2);
+			localStorage.setItem('holder', JSON.stringify(res));
+			};
 			</script>
 			</body>
 			</html>
