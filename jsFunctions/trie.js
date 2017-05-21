@@ -1,9 +1,9 @@
 
-function Node(data, timePress, timeRelease) {
+function Node(data, timePress, durationPressed) {
 	this.data = data;
 	this.isWord = false;
 	this.timePress = timePress;
-	this.timeRelease = timeRelease;
+	this.durationPressed = durationPressed;
 	this.prefixes = 0;
 	this.children = {};
 }
@@ -12,13 +12,13 @@ function Trie() {
 	this.root = new Node('');
 }
 
-Trie.prototype.add = function(word, timeArrayPress, timeArrayRelease) {
+Trie.prototype.add = function(word, timeArrayPress, timeArrayDuration) {
 	if(!this.root) {
 		return null;
 	}
-	this._addNode(this.root, word, timeArrayPress, timeArrayRelease);
+	this._addNode(this.root, word, timeArrayPress, timeArrayDuration);
 };
-Trie.prototype._addNode = function(node, word, timeArrayPress, timeArrayRelease) {
+Trie.prototype._addNode = function(node, word, timeArrayPress, timeArrayDuration) {
 	if(!node || !word) {
 		return null;
 	}
@@ -26,16 +26,16 @@ Trie.prototype._addNode = function(node, word, timeArrayPress, timeArrayRelease)
 	var letter = word.charAt(0);
 	var child = node.children[letter];
 	var timePress = timeArrayPress.shift();
-	var timeRelease = timeArrayRelease.shift();
+	var timeDuration= timeArrayDuration.shift();
 	if(!child) {
-		child = new Node(letter, timePress, timeRelease);
+		child = new Node(letter, timePress, timeDuration);
 		node.children[letter] = child;
 	}
 	var remainder = word.substring(1);
 	if(!remainder) {
 		child.isWord = true;
 	}
-	this._addNode(child, remainder, timeArrayPress, timeArrayRelease);
+	this._addNode(child, remainder, timeArrayPress, timeArrayDuration);
 };
 
 Trie.prototype.remove = function(word) {
@@ -76,7 +76,16 @@ Trie.prototype.contains = function(word) {
 	if(!this.root) {
 		return false;
 	}
-	return this._contains(this.root, word);
+	return this.containsPartial(this.root, word);
+};
+Trie.prototype.update = function(word, press, duration) {
+	console.log(press);
+	if(!this.root) {
+		return false;
+	}
+	press.reverse();
+	duration.reverse();
+	return this._update(this.root, word, press, duration);
 };
 Trie.prototype._contains = function(node, word) {
 	if(!node || !word) {
@@ -90,6 +99,48 @@ Trie.prototype._contains = function(node, word) {
 			return true;
 		} else {
 			return this._contains(child, remainder);
+		}
+	} else {
+		return false;
+	}
+};
+Trie.prototype.containsPartial = function(node, word) {
+	if(!node) {
+		return false;
+	}
+	if(word == " ") {
+		return true;
+	}
+	var letter = word.charAt(0);
+	var child = node.children[letter];
+	if(child) {
+		var remainder = word.substring(1);
+		if(!remainder && child.isWord) {
+			return true;
+		} else {
+			return this.containsPartial(child, remainder);
+		}
+	} else {
+			return false;
+	}
+};
+Trie.prototype._update = function(node, word, press, duration) {
+	if(!node) {
+		return false;
+	}
+	if(word == " ") {
+		return true;
+	}
+	var letter = word.charAt(0);
+	var child = node.children[letter];
+	if(child) {
+		child.timePress = (child.timePress + press.pop())/2;
+		child.durationPressed = (child.durationPressed + duration.pop())/2;
+		var remainder = word.substring(1);
+		if(!remainder && child.isWord) {
+			return true;
+		} else {
+			return this._update(child, remainder, press, duration);
 		}
 	} else {
 		return false;
@@ -171,7 +222,7 @@ Trie.prototype.printByLevel = function() {
 	var string = '';
 	while(queue.length) {
 		var node = queue.shift();
-		string += node.data.toString() + (node.timePress > 0 ? '(' + node.timePress + ', ' : '') + (node.timeRelease > 0 ? node.timeRelease + ')' : '') + (node.data !== '\n' ? ' ' : '');
+		string += node.data.toString() + (node.timePress > 0 ? '(' + node.timePress + ', ' : '') + (node.durationPressed > 0 ? node.durationPressed + ')' : '') + (node.data !== '\n' ? ' ' : '');
 		if(node === newline && queue.length) {
 			queue.push(newline);
 		}
@@ -184,10 +235,4 @@ Trie.prototype.printByLevel = function() {
 	console.log(string.trim());
 };
 
-var trie = new Trie();
-trie.add('appled', [1.02,2.11,3.00,4.44,5.91,6.04], [13.11,2,4,7,4,1]);
-trie.add('ape', [3.01,2,1],[1,2,3]);
-trie.add('aps', [3.01,2,1],[1,2,6]);
-trie.remove('aps');
-trie.print();
-trie.printByLevel(); 
+

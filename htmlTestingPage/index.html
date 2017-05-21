@@ -1,58 +1,121 @@
+<head> 
+	<script src="../jsFunctions/trie.js" type="text/javascript"></script>
+</head>
+
 
 <body>
 
-Type here:<br>
-<input type="text" name="firstname" value="">
-<br>
 <br> 
-
-
 <div id="output"> </div>
-<button type="button" onclick"getInput();">Start</button>
-<button type="button">End</button>
 
 <script type="text/javascript">
+
 var output = document.getElementById('output'),
     pressed = {};
+var times = new Array();
+localStorage.setItem('time', JSON.stringify(times));
+var holder = '';
+localStorage.setItem('holder', JSON.stringify(holder));
+var trie = new Trie();
+var timePressed = new Array();
+var durationPressed = new Array();
+
+
 
 window.onkeydown = function(e) {
 	if ( pressed[e.which] ) return;
 	pressed[e.which] = e.timeStamp;
 };
 
-var times = new Array();
-localStorage.setItem('time', JSON.stringify(times));
 window.onkeyup = function(e) {
 	if ( !pressed[e.which] ) return;
 	var duration = ( e.timeStamp - pressed[e.which] ) / 1000;
-	var times = new Array();
-	times = JSON.parse(localStorage.getItem('time'));
-	var charCode = e.keyCode || e.which;
-	var charStr = String.fromCharCode(charCode);
 	var start = pressed[e.which];	
-
-	times.push({charStr, duration, start});
-	localStorage.setItem('time', JSON.stringify(times));
-	output.innerHTML +='<p>Key ' + charStr  + ' was pressed for ' + duration + ' seconds at time ' + start  + '</p>';
+	if (e.which !== 32) {
+		timePressed.push(start);
+		durationPressed.push(duration);
+	}
+	output.innerHTML +='<p>Key ' + e.which  + ' was pressed for ' + duration + ' seconds at time ' + start  + '</p>';
 	pressed[e.which] = 0;
-	console.log(times[0]);
 };
 
-var holder = '';
-localStorage.setItem('holder', JSON.stringify(holder));
-
-
 document.onkeypress = function(e) {
+
+	//converts the key press to asccii
 	var prep = localStorage.getItem('holder');
 	e = e || window.event;
 	var charCode = e.keyCode || e.which;
 	var charStr = String.fromCharCode(charCode);
-	console.log(charStr);
+	
+	//removes garbage from the string that results from formatting
 	var res = prep.concat(charStr).replace(/"([^"]+(?="))"/g, '$1');
-			var res2 = res.replace(/\\/g,"");
-			console.log(res2);
-			localStorage.setItem('holder', JSON.stringify(res));
-			};
-			</script>
-			</body>
-			</html>
+	var res2 = res.replace(/\\/g,"");
+	
+	//Every time a space is typed the word typed is added to the trie
+	//otherwise it will just add onto the current word making it longer
+	if (charStr == " ") {
+		var times = new Array();
+		times = JSON.parse(localStorage.getItem('time'));
+		var temp1 = timePressed.slice(0);
+		var temp2 = durationPressed.slice(0);
+
+		//simplifies the time pressed to get the time of traversal
+		for (var i = temp1.length-1; i > -1; i--) {
+			if (i > 0) {
+				temp1[i] = temp1[i] - temp1[i-1];
+				timePressed[i] = timePressed[i] - timePressed[i-1];
+			} 
+		}
+		temp1[0] = 0.0001;
+		timePressed[0] = 0.0001;
+
+		/*
+		If the trie does not contain the word then add it in,
+		If it does contain the word then it will just update
+		the times instead
+		*/
+		if(!trie.contains(res2)){
+			trie.add(res2, timePressed, durationPressed);
+		} else {
+			trie.update(res2, temp1, temp2);
+		}
+		trie.printByLevel();
+
+		//resets variables for the next word to be typed
+		localStorage.setItem('holder', "");
+		timePressed = new Array();
+		durationPressed = new Array();
+	} else {
+		localStorage.setItem('holder', JSON.stringify(res));
+	}
+};
+
+/*
+Evan
+0			
+146.14		179.945		140.765		126.94
+282.045		322.045		307.795		272.225
+173.95		159.765		161.195		163.895
+212.055		242.23		204.98		204.03
+
+Collin
+0
+93.35		87.755
+96.08		132.005
+156.105		162.04
+184.955		190.165
+*/
+
+
+
+
+
+function pressPrint() {
+	trie.printByLevel(); 
+}
+</script>
+
+
+<button onclick="pressPrint()"> print </button>
+</body>
+</html>
